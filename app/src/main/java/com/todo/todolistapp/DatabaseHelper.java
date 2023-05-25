@@ -33,6 +33,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO: migrate data
+        db.execSQL("CREATE TABLE tasks_backup (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, creation_date INTEGER, due_date INTEGER, is_completed INTEGER, notifications_enabled INTEGER, category TEXT)");
+        db.execSQL("INSERT INTO tasks_backup SELECT * FROM tasks");
+        db.execSQL("DROP TABLE tasks");
+        db.execSQL("ALTER TABLE tasks_backup RENAME TO tasks");
+        
+        db.execSQL("CREATE TABLE settings_backup (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, value TEXT)");
+        db.execSQL("INSERT INTO settings_backup SELECT * FROM settings");
+        db.execSQL("DROP TABLE settings");
+        db.execSQL("ALTER TABLE settings_backup RENAME TO settings");
     }
 }
