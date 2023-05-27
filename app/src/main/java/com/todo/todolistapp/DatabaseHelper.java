@@ -167,4 +167,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return hideFinishedTasks == 1;
     }
 
+    public List<String> getCategories() {
+        List<String> categories = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT DISTINCT category FROM tasks", null);
+
+        while (cursor.moveToNext()) {
+            @SuppressLint("Range") String category = cursor.getString(cursor.getColumnIndex("category"));
+            categories.add(category);
+        }
+
+        cursor.close();
+        return categories;
+    }
+
 }
