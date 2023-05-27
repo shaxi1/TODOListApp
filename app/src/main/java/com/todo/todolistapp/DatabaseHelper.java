@@ -230,4 +230,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.update("tasks", values, "task_id = " + taskId, null);
     }
 
+    @SuppressLint("Range")
+    public List<Task> getTasksNoFinished() {
+        List<Task> taskList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] columns = { "task_id", "title", "description", "creation_date", "due_date", "is_completed", "notifications_enabled", "category" };
+        String selection = "is_completed = ?";
+        String[] selectionArgs = { "0" };
+        String orderBy = "due_date ASC"; // Sorting by ascending due date
+
+        Cursor cursor = db.query("tasks", columns, selection, selectionArgs, null, null, orderBy);
+
+        while (cursor.moveToNext()) {
+            Task task = new Task();
+            task.taskId = cursor.getInt(cursor.getColumnIndex("task_id"));
+            task.title = cursor.getString(cursor.getColumnIndex("title"));
+            task.description = cursor.getString(cursor.getColumnIndex("description"));
+
+            long creationTime = cursor.getLong(cursor.getColumnIndex("creation_date"));
+            task.creationDate = new Date(creationTime);
+
+            long dueTime = cursor.getLong(cursor.getColumnIndex("due_date"));
+            task.dueDate = new Date(dueTime);
+
+            int isCompletedValue = cursor.getInt(cursor.getColumnIndex("is_completed"));
+            task.isCompleted = isCompletedValue == 1;
+
+            int notificationsEnabledValue = cursor.getInt(cursor.getColumnIndex("notifications_enabled"));
+            task.notificationsEnabled = notificationsEnabledValue == 1;
+
+            task.category = cursor.getString(cursor.getColumnIndex("category"));
+
+            taskList.add(task);
+        }
+
+        cursor.close();
+        return taskList;
+    }
+
 }
