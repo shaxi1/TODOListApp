@@ -23,7 +23,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
 
     public TaskAdapter(Context context) {
         databaseHelper = new DatabaseHelper(context);
-        taskList = databaseHelper.getTasksSortedByDueDate();
+        if (databaseHelper.hideFinishedTasks()) {
+            taskList = databaseHelper.getTasksNoFinished();
+        } else {
+            taskList = databaseHelper.getTasksSortedByDueDate();
+        }
         filterCategory = "All";
     }
 
@@ -38,6 +42,16 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         } else {
             taskList = databaseHelper.getTasksWithCategory(filterCategory);
         }
+
+        if (databaseHelper.hideFinishedTasks()) {
+            for (int i = 0; i < taskList.size(); i++) {
+                if (taskList.get(i).isCompleted) {
+                    taskList.remove(i);
+                    i--;
+                }
+            }
+        }
+
         notifyDataSetChanged();
     }
 
