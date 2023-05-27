@@ -19,10 +19,26 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
 
     static DatabaseHelper databaseHelper;
     private List<Task> taskList;
+    private String filterCategory;
 
     public TaskAdapter(Context context) {
         databaseHelper = new DatabaseHelper(context);
         taskList = databaseHelper.getTasksSortedByDueDate();
+        filterCategory = "All";
+    }
+
+    public void setFilterCategory(String choice) {
+        filterCategory = choice;
+        updateTaskList();
+    }
+
+    private void updateTaskList() {
+        if (filterCategory.equals("All")) {
+            taskList = databaseHelper.getTasksSortedByDueDate();
+        } else {
+            taskList = databaseHelper.getTasksWithCategory(filterCategory);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull

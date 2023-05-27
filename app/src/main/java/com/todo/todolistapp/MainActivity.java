@@ -22,6 +22,12 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
 
     @Override
     public void onCardClick(int task_id) {
-        // create task details fragment with task_id as argument
+        TaskDetailsFragment taskDetailsFragment = TaskDetailsFragment.newInstance();
+        Bundle bundle = new Bundle();
+        bundle.putInt("task_id", task_id);
+        taskDetailsFragment.setArguments(bundle);
+
+        // TODO: add logic for tablets
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, taskDetailsFragment).commit();
     }
 }
