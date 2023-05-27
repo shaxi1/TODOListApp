@@ -31,4 +31,17 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         // TODO: add logic for tablets
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, taskDetailsFragment).commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_list);
+
+        if (currentFragment instanceof TaskDetailsFragment) {
+            TODOListFragment todoListFragment = TODOListFragment.newInstance();
+            todoListFragment.setOnCardClickListener(this);
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();
+        } else {
+            super.onBackPressed();
+        }
+    }
 }
