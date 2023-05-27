@@ -30,6 +30,12 @@ public class TaskDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        if (getArguments() != null) {
+            int task_id = getArguments().getInt("task_id");
+            // TODO: get task from database and fill the components
+        } else {
+            // blank components
+        }
 
         return inflater.inflate(R.layout.fragment_task_details, container, false);
     }

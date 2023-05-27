@@ -46,6 +46,14 @@
             android:gravity="center"
             />
 
+        <TextView
+            android:id="@+id/invisible_task_id"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="invisible"
+            android:text=""
+            />
+
     </LinearLayout>
     
 </androidx.cardview.widget.CardView>

@@ -6,4 +6,10 @@
     android:layout_height="match_parent"
     tools:context=".AddTaskActivity">
 
+    <!--  Using task details fragment that allows to edit and save tasks  -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/task_details"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
