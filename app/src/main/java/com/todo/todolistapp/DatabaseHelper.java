@@ -25,8 +25,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         /* set default values */
 
         db.execSQL("INSERT INTO settings (name, value) VALUES ('hide_finished_tasks', 'false')");
-        /* "All" means don't filter at all */
-        db.execSQL("INSERT INTO settings (name, value) VALUES ('filter_category', 'All')");
+        /* blank "" means don't filter at all */
+        db.execSQL("INSERT INTO settings (name, value) VALUES ('filter_category', '')");
         /* notification X minutes before due time */
         db.execSQL("INSERT INTO settings (name, value) VALUES ('notify_before', '60')");
     }
