@@ -82,8 +82,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             taskTitle.setText(task.title);
 
             TextView taskDueDate = itemView.findViewById(R.id.due_time);
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-            taskDueDate.setText(simpleDateFormat.format(task.dueDate));
+            taskDueDate.setText(String.valueOf(task.dueDate));
 
             TextView taskDescription = itemView.findViewById(R.id.invisible_task_id);
             taskDescription.setText(String.valueOf(task.taskId));
@@ -121,6 +120,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
 
                     ImageButton imageButton = itemView.findViewById(R.id.complete_button);
                     imageButton.setImageResource(R.drawable.checked_24);
+                    // notifyDataSetChanged
+
                 }
             });
 

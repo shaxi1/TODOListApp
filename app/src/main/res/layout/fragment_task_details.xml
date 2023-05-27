@@ -1,14 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TaskDetailsFragment">
+    android:orientation="vertical">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <EditText
+        android:id="@+id/edit_task_title"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="add task" />
+        android:layout_height="wrap_content"
+        android:hint="Task Title" />
 
-</FrameLayout>
+    <EditText
+        android:id="@+id/edit_task_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Task Description" />
+
+    <TextView
+        android:id="@+id/text_task_creation_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Creation Date"/>
+
+    <EditText
+        android:id="@+id/edit_task_due_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Due Date"
+        android:focusable="false"
+        android:onClick="onDueDateClick" />
+
+    <CheckBox
+        android:id="@+id/checkbox_task_completed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Completed" />
+
+    <CheckBox
+        android:id="@+id/checkbox_notifications_enabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notifications Enabled" />
+
+    <EditText
+        android:id="@+id/edit_task_category"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Task Category" />
+
+    <Button
+        android:id="@+id/btn_delete_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Delete" />
+
+    <Button
+        android:id="@+id/btn_save_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Save" />
+
+</LinearLayout>

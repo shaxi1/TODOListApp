@@ -145,6 +145,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return attachments;
     }
 
+    @SuppressLint("Range")
+    public Task getTask(int taskId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] columns = { "title", "description", "creation_date", "due_date", "is_completed", "notifications_enabled", "category" };
+        String selection = "task_id = ?";
+        String[] selectionArgs = { String.valueOf(taskId) };
+
+        Cursor cursor = db.query("tasks", columns, selection, selectionArgs, null, null, null);
+
+        Task task = new Task();
+        if (cursor.moveToFirst()) {
+            task.taskId = taskId;
+            task.title = cursor.getString(cursor.getColumnIndex("title"));
+            task.description = cursor.getString(cursor.getColumnIndex("description"));
+
+            long creationTime = cursor.getLong(cursor.getColumnIndex("creation_date"));
+            task.creationDate = new Date(creationTime);
+
+            long dueTime = cursor.getLong(cursor.getColumnIndex("due_date"));
+            task.dueDate = new Date(dueTime);
+
+            int isCompletedValue = cursor.getInt(cursor.getColumnIndex("is_completed"));
+            task.isCompleted = isCompletedValue == 1;
+
+            int notificationsEnabledValue = cursor.getInt(cursor.getColumnIndex("notifications_enabled"));
+            task.notificationsEnabled = notificationsEnabledValue == 1;
+
+            task.category = cursor.getString(cursor.getColumnIndex("category"));
+        }
+
+        cursor.close();
+        return task;
+    }
+
     public int getNotificationTime() {
         SQLiteDatabase db = this.getReadableDatabase();
 
