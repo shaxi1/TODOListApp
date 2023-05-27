@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
 
@@ -26,6 +27,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             taskList = databaseHelper.getTasksNoFinished();
         } else {
             taskList = databaseHelper.getTasksSortedByDueDate();
+            System.out.println("TaskAdapter: " + taskList.size());
         }
         filterCategory = "All";
     }
@@ -72,7 +74,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         return taskList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View view) {
             super(view);
         }
@@ -82,7 +84,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             taskTitle.setText(task.title);
 
             TextView taskDueDate = itemView.findViewById(R.id.due_time);
-            taskDueDate.setText(String.valueOf(task.dueDate));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            String formattedDate = dateFormat.format(task.dueDate);
+            taskDueDate.setText(formattedDate);
 
             TextView taskDescription = itemView.findViewById(R.id.invisible_task_id);
             taskDescription.setText(String.valueOf(task.taskId));
@@ -100,7 +104,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int task_id = Integer.parseInt(String.valueOf(itemView.findViewById(R.id.invisible_task_id)));
+                    TextView textView = cardView.findViewById(R.id.invisible_task_id);
+                    String text = textView.getText().toString();
+                    int task_id = Integer.parseInt(text);
                     onCardClickListener.onCardClick(task_id);
                 }
             });
@@ -115,12 +121,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             imageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int task_id = Integer.parseInt(String.valueOf(itemView.findViewById(R.id.invisible_task_id)));
+                    TextView textView = itemView.findViewById(R.id.invisible_task_id);
+                    String text = textView.getText().toString();
+                    int task_id = Integer.parseInt(text);
                     TaskAdapter.databaseHelper.setTaskToFinished(task_id);
 
                     ImageButton imageButton = itemView.findViewById(R.id.complete_button);
                     imageButton.setImageResource(R.drawable.checked_24);
-                    // notifyDataSetChanged
+                    notifyDataSetChanged();
 
                 }
             });
@@ -132,5 +140,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         void onCardClick (int task_id);
     }
     static OnCardClickListener onCardClickListener;
+    public void setOnCardClickListener(OnCardClickListener listener) {
+        onCardClickListener = listener;
+    }
 
 }

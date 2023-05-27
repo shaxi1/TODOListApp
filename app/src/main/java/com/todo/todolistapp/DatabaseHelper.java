@@ -51,7 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void addTask(Task task) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("INSERT INTO tasks (title, description, creation_date, due_date, is_completed, notifications_enabled, category) VALUES ('" + task.title + "', '" + task.description + "', " + task.creationDate + ", " + task.dueDate + ", " + task.isCompleted + ", " + task.notificationsEnabled + ", '" + task.category + "')");
+        db.execSQL("INSERT INTO tasks (title, description, creation_date, due_date, is_completed, notifications_enabled, category) VALUES ('" + task.title + "', '" + task.description + "', " + task.creationDate.getTime() + ", " + task.dueDate.getTime() + ", " + task.isCompleted + ", " + task.notificationsEnabled + ", '" + task.category + "')");
     }
 
     public void addFileToTask(String path, int taskId) {
@@ -66,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void updateTask(Task task, int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE tasks SET title = '" + task.title + "', description = '" + task.description + "', creation_date = " + task.creationDate + ", due_date = " + task.dueDate + ", is_completed = " + task.isCompleted + ", notifications_enabled = " + task.notificationsEnabled + ", category = '" + task.category + "' WHERE task_id = " + taskId);
+        db.execSQL("UPDATE tasks SET title = '" + task.title + "', description = '" + task.description + "', creation_date = " + task.creationDate.getTime() + ", due_date = " + task.dueDate.getTime() + ", is_completed = " + task.isCompleted + ", notifications_enabled = " + task.notificationsEnabled + ", category = '" + task.category + "' WHERE task_id = " + taskId);
     }
 
     public void deleteTask(int taskId) {
@@ -177,6 +177,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
+        if (task.taskId == 0) {
+            return null;
+        }
+
         return task;
     }
 

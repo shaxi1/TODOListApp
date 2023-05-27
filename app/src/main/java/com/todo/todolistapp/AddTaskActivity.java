@@ -10,5 +10,8 @@ public class AddTaskActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_task);
+
+        TaskDetailsFragment taskDetailsFragment = TaskDetailsFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.task_details, taskDetailsFragment).commit();
     }
 }

@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         setContentView(R.layout.activity_main);
 
         TODOListFragment todoListFragment = TODOListFragment.newInstance();
+        todoListFragment.setOnCardClickListener(this);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();
 
 

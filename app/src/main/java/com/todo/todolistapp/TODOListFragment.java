@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
@@ -29,6 +30,8 @@ public class TODOListFragment extends Fragment {
         // Required empty public constructor
     }
 
+    private TaskAdapter.OnCardClickListener onCardClickListener;
+
     public static TODOListFragment newInstance() {
         return new TODOListFragment();
     }
@@ -45,8 +48,10 @@ public class TODOListFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_todo_list, container, false);
 
-        taskAdapter = new TaskAdapter(getActivity());
         recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        taskAdapter = new TaskAdapter(getActivity());
+        taskAdapter.setOnCardClickListener(onCardClickListener);
         recyclerView.setAdapter(taskAdapter);
 
         configureFloatingButtonClick(view);
@@ -97,5 +102,8 @@ public class TODOListFragment extends Fragment {
         });
     }
 
+    public void setOnCardClickListener(TaskAdapter.OnCardClickListener listener) {
+        onCardClickListener = listener;
+    }
 
 }

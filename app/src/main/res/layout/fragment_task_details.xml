@@ -27,8 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Due Date"
-        android:focusable="false"
-        android:onClick="onDueDateClick" />
+        android:focusable="false" />
 
     <CheckBox
         android:id="@+id/checkbox_task_completed"
