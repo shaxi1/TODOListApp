@@ -153,6 +153,7 @@ public class TaskDetailsFragment extends Fragment {
         EditText dueDate = view.findViewById(R.id.edit_task_due_date);
         EditText category = view.findViewById(R.id.edit_task_category);
         CheckBox isDone = view.findViewById(R.id.checkbox_task_completed);
+        CheckBox notificationsEnabled = view.findViewById(R.id.checkbox_notifications_enabled);
 
         // check if every field is filled
         if (title.getText().toString().isEmpty() || description.getText().toString().isEmpty()
@@ -181,7 +182,7 @@ public class TaskDetailsFragment extends Fragment {
         task.taskId = task_id;
         task.creationDate = new Date(System.currentTimeMillis());
         task.category = category.getText().toString();
-        // TODO: attachments
+        task.notificationsEnabled = notificationsEnabled.isChecked();
 
         return task;
     }

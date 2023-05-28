@@ -11,6 +11,7 @@ import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -21,10 +22,24 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TODOListFragment todoListFragment = TODOListFragment.newInstance();
-        todoListFragment.setOnCardClickListener(this);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("notificationId")) {
+            int taskId = intent.getIntExtra("notificationId", -1);
 
+            TaskDetailsFragment taskDetailsFragment = TaskDetailsFragment.newInstance();
+            Bundle bundle = new Bundle();
+            bundle.putInt("task_id", taskId);
+            taskDetailsFragment.setArguments(bundle);
+            //setIntent(null);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_list, taskDetailsFragment)
+                    .commit();
+        } else {
+            TODOListFragment todoListFragment = TODOListFragment.newInstance();
+            todoListFragment.setOnCardClickListener(this);
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();
+        }
 
     }
 
@@ -42,6 +57,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
     @Override
     protected void onResume() {
         super.onResume();
+        if (getIntent() != null) {
+            setIntent(null);
+            return;
+        }
         TODOListFragment todoListFragment = TODOListFragment.newInstance();
         todoListFragment.setOnCardClickListener(this);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();

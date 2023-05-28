@@ -1,11 +1,20 @@
 package com.todo.todolistapp;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
+import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -15,9 +24,11 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "todoapp.db";
     private static final int DATABASE_VERSION = 1;
+    private Context context;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
 
@@ -61,9 +72,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("notifications_enabled", task.notificationsEnabled);
         values.put("category", task.category);
 
-        // TODO: noto
+        int id = (int) db.insert("tasks", null, values);
+        task.taskId = id;
+        if (task.notificationsEnabled) {
+            scheduleNotification(task);
+        }
 
-        return (int) db.insert("tasks", null, values);
+        return id;
     }
 
 
@@ -84,14 +99,57 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void updateTask(Task task, int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        // TODO noto
+
+        Task oldTask = getTask(taskId);
+        if (oldTask.notificationsEnabled) {
+            cancelNotification(task, taskId);
+        }
+        if (task.notificationsEnabled) {
+            scheduleNotification(task);
+        }
+
         db.execSQL("UPDATE tasks SET title = '" + task.title + "', description = '" + task.description + "', creation_date = " + task.creationDate.getTime() + ", due_date = " + task.dueDate.getTime() + ", is_completed = " + task.isCompleted + ", notifications_enabled = " + task.notificationsEnabled + ", category = '" + task.category + "' WHERE task_id = " + taskId);
     }
 
     public void deleteTask(int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        // TODO noto
+        Task task = getTask(taskId);
+        if (task.notificationsEnabled) {
+            cancelNotification(task, taskId);
+        }
         db.execSQL("DELETE FROM tasks WHERE task_id = " + taskId);
+    }
+
+    private void scheduleNotification(Task task) {
+        int taskIn = getNotificationTime();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("todoapp", "todoapp", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra("notificationId", task.taskId);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, task.taskId, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification notification = new NotificationCompat.Builder(context, "todoapp")
+                .setSmallIcon(R.drawable.notification_24)
+                .setContentTitle("Task:" + task.title)
+                .setContentText("Task is due in " + taskIn + " minutes")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build();
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(task.taskId, notification);
+    }
+
+    private void cancelNotification(Task task, int notificationId) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(notificationId);
     }
 
     @SuppressLint("Range")
@@ -141,7 +199,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("notify_before", notifyBefore);
         db.update("settings", values, "settings_id = 1", null);
 
-        // TODO: noto
+        // redo the notifications
+        List<Task> taskList = getTasksSortedByDueDate();
+        for (Task task : taskList) {
+            if (task.notificationsEnabled) {
+                cancelNotification(task, task.taskId);
+                scheduleNotification(task);
+            }
+        }
     }
 
     // closest to the deadline
