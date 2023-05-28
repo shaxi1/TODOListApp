@@ -140,6 +140,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
 
                     ImageButton imageButton = itemView.findViewById(R.id.complete_button);
                     imageButton.setImageResource(R.drawable.checked_24);
+                    setTaskList(databaseHelper.getTasksSortedByDueDate());
                     notifyDataSetChanged();
 
                 }
