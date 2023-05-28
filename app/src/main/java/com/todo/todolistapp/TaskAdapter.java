@@ -91,6 +91,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
             TextView taskDescription = itemView.findViewById(R.id.invisible_task_id);
             taskDescription.setText(String.valueOf(task.taskId));
 
+            ImageButton imageButton = itemView.findViewById(R.id.complete_button);
+            if (task.isCompleted) {
+                imageButton.setImageResource(R.drawable.checked_24);
+            } else {
+                imageButton.setImageResource(R.drawable.unchecked_24);
+            }
+
             configureImageButton(itemView);
             configureCardClick(itemView);
         }
