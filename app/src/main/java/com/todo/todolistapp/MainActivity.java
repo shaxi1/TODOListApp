@@ -33,6 +33,14 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        TODOListFragment todoListFragment = TODOListFragment.newInstance();
+        todoListFragment.setOnCardClickListener(this);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();
+    }
+
+    @Override
     public void onBackPressed() {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_list);
 

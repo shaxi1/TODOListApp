@@ -24,7 +24,7 @@ import java.util.List;
 
 public class TODOListFragment extends Fragment {
     private DatabaseHelper databaseHelper;
-    private TaskAdapter taskAdapter;
+    public TaskAdapter taskAdapter;
     private RecyclerView recyclerView;
     public TODOListFragment() {
         // Required empty public constructor
