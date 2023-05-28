@@ -61,6 +61,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("notifications_enabled", task.notificationsEnabled);
         values.put("category", task.category);
 
+        // TODO: noto
+
         return (int) db.insert("tasks", null, values);
     }
 
@@ -82,12 +84,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void updateTask(Task task, int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
+        // TODO noto
         db.execSQL("UPDATE tasks SET title = '" + task.title + "', description = '" + task.description + "', creation_date = " + task.creationDate.getTime() + ", due_date = " + task.dueDate.getTime() + ", is_completed = " + task.isCompleted + ", notifications_enabled = " + task.notificationsEnabled + ", category = '" + task.category + "' WHERE task_id = " + taskId);
     }
 
     public void deleteTask(int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
+        // TODO noto
         db.execSQL("DELETE FROM tasks WHERE task_id = " + taskId);
+    }
+
+    @SuppressLint("Range")
+    public List<Task> getTasksNameContaining(String query) {
+        List<Task> taskList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] columns = { "task_id", "title", "description", "creation_date", "due_date", "is_completed", "notifications_enabled", "category" };
+        String selection = "title LIKE '%" + query + "%'";
+        String orderBy = "due_date ASC";
+
+        Cursor cursor = db.query("tasks", columns, selection, null, null, null, orderBy);
+
+        while (cursor.moveToNext()) {
+            Task task = new Task();
+            task.taskId = cursor.getInt(cursor.getColumnIndex("task_id"));
+            task.title = cursor.getString(cursor.getColumnIndex("title"));
+            task.description = cursor.getString(cursor.getColumnIndex("description"));
+
+            long creationTime = cursor.getLong(cursor.getColumnIndex("creation_date"));
+            task.creationDate = new Date(creationTime);
+
+            long dueTime = cursor.getLong(cursor.getColumnIndex("due_date"));
+            task.dueDate = new Date(dueTime);
+
+            task.isCompleted = cursor.getInt(cursor.getColumnIndex("is_completed")) == 1;
+            task.notificationsEnabled = cursor.getInt(cursor.getColumnIndex("notifications_enabled")) == 1;
+            task.category = cursor.getString(cursor.getColumnIndex("category"));
+
+            taskList.add(task);
+        }
+
+        cursor.close();
+        return taskList;
     }
 
     public void deleteAllTasks() {
@@ -102,6 +140,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("hide_finished_tasks", hideFinishedTasks ? 1 : 0);
         values.put("notify_before", notifyBefore);
         db.update("settings", values, "settings_id = 1", null);
+
+        // TODO: noto
     }
 
     // closest to the deadline

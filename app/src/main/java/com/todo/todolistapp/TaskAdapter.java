@@ -32,6 +32,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         filterCategory = "All";
     }
 
+    public void setTaskList(List<Task> taskList) {
+        this.taskList = taskList;
+        notifyDataSetChanged();
+    }
+
     public void setFilterCategory(String choice) {
         filterCategory = choice;
         updateTaskList();

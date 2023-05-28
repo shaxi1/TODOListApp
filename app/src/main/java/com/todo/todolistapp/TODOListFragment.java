@@ -1,11 +1,8 @@
 package com.todo.todolistapp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.SearchView;
 import android.widget.Spinner;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,6 +24,7 @@ public class TODOListFragment extends Fragment {
     private DatabaseHelper databaseHelper;
     public TaskAdapter taskAdapter;
     private RecyclerView recyclerView;
+    private SearchView searchView;
     public TODOListFragment() {
         // Required empty public constructor
     }
@@ -57,8 +56,31 @@ public class TODOListFragment extends Fragment {
         configureFloatingButtonClick(view);
         configureSpinner(view);
 
+        searchView = view.findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                performSearch(newText);
+                return true;
+            }
+        });
+
+
         return view;
     }
+
+    private void performSearch(String query) {
+        List<Task> searchResults = databaseHelper.getTasksNameContaining(query);
+
+        taskAdapter.setTaskList(searchResults);
+    }
+
 
     private void configureSpinner(View view) {
         Spinner spinner = view.findViewById(R.id.category_spinner);
