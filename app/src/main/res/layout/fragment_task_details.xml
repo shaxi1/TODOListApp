@@ -47,18 +47,52 @@
         android:layout_height="wrap_content"
         android:hint="Task Category" />
 
-    <Button
-        android:id="@+id/btn_delete_task"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="Delete" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btn_save_task"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Save" />
+
+        <Button
+            android:id="@+id/btn_delete_task"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Delete" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/recycler_view_border"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <!-- RecyclerView for attachments -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_attachments"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="0dp"
+                android:orientation="horizontal"
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <Button
-        android:id="@+id/btn_save_task"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="Save" />
+        android:layout_gravity="end"
+        android:text="@string/attach_file"
+        android:layout_marginEnd="5dp"
+        android:id="@+id/attach_file_button"/>
 
 </LinearLayout>

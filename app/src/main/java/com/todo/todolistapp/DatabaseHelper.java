@@ -49,10 +49,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addTask(Task task) {
+    public int addTask(Task task) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("INSERT INTO tasks (title, description, creation_date, due_date, is_completed, notifications_enabled, category) VALUES ('" + task.title + "', '" + task.description + "', " + task.creationDate.getTime() + ", " + task.dueDate.getTime() + ", " + task.isCompleted + ", " + task.notificationsEnabled + ", '" + task.category + "')");
+
+        ContentValues values = new ContentValues();
+        values.put("title", task.title);
+        values.put("description", task.description);
+        values.put("creation_date", task.creationDate.getTime());
+        values.put("due_date", task.dueDate.getTime());
+        values.put("is_completed", task.isCompleted);
+        values.put("notifications_enabled", task.notificationsEnabled);
+        values.put("category", task.category);
+
+        return (int) db.insert("tasks", null, values);
     }
+
 
     public void addFileToTask(String path, int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -62,6 +73,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void removeFileFromTask(String path, int taskId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM tasks_attachments WHERE task_id = " + taskId + " AND attachment_path = '" + path + "'");
+    }
+
+    public void removeTaskAttachments(int taskId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM tasks_attachments WHERE task_id = " + taskId);
     }
 
     public void updateTask(Task task, int taskId) {
@@ -126,23 +142,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return taskList;
     }
 
-    public List<String> getTaskAttachments(int taskId) {
-        List<String> attachments = new ArrayList<>();
+    @SuppressLint("Range")
+    public List<Attachment> getTaskAttachments(int taskId) {
+        List<Attachment> attachmentList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String[] columns = { "attachment_path" };
+        String[] columns = { "attachment_id", "attachment_path" };
         String selection = "task_id = ?";
         String[] selectionArgs = { String.valueOf(taskId) };
 
         Cursor cursor = db.query("tasks_attachments", columns, selection, selectionArgs, null, null, null);
 
         while (cursor.moveToNext()) {
-            @SuppressLint("Range") String attachmentPath = cursor.getString(cursor.getColumnIndex("attachment_path"));
-            attachments.add(attachmentPath);
+            Attachment attachment = new Attachment();
+            attachment.attachment_id = cursor.getInt(cursor.getColumnIndex("attachment_id"));
+            attachment.path = cursor.getString(cursor.getColumnIndex("attachment_path"));
+
+            attachmentList.add(attachment);
         }
 
         cursor.close();
-        return attachments;
+        return attachmentList;
     }
 
     @SuppressLint("Range")

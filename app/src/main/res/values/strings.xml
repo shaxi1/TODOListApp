@@ -5,4 +5,6 @@
     <string name="place_holder">Place Holder</string>
     <string name="checkbox">CheckBox</string>
     <string name="add_task">add_task</string>
+    <string name="tap_below_to_attach_files">Tap below to attach files</string>
+    <string name="attach_file">Attach File</string>
 </resources>

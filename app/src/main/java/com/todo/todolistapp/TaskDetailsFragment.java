@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -35,6 +37,9 @@ import java.util.Objects;
 
 public class TaskDetailsFragment extends Fragment {
     DatabaseHelper databaseHelper;
+    public RecyclerView recyclerView;
+    public static volatile int task_id;
+    public static AttachmentAdapter attachmentAdapter;
 
 
     public TaskDetailsFragment() {
@@ -49,7 +54,6 @@ public class TaskDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         databaseHelper = new DatabaseHelper(getActivity());
-
     }
 
     @Override
@@ -58,7 +62,7 @@ public class TaskDetailsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_task_details, container, false);
 
-        int task_id = -1;
+        task_id = -1;
         if (getArguments() != null) {
             task_id = getArguments().getInt("task_id");
             Task task = databaseHelper.getTask(task_id);
@@ -85,7 +89,40 @@ public class TaskDetailsFragment extends Fragment {
         configureDeleteTaskButton(view, task_id);
         configureSaveButton(view, task_id);
 
+        recyclerView = view.findViewById(R.id.recycler_attachments);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        attachmentAdapter = new AttachmentAdapter(getActivity(), task_id);
+        recyclerView.setAdapter(attachmentAdapter);
+        configureAttachButton(view, task_id);
+
         return view;
+    }
+
+    private void configureAttachButton(View view, int task_id) {
+        Button attachButton = view.findViewById(R.id.attach_file_button);
+        attachButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!allFieldsFilled() || TaskDetailsFragment.task_id == -1) {
+                    Toast toast = Toast.makeText(getActivity(), "Save the task before attaching files", Toast.LENGTH_LONG);
+                    toast.show();
+                    return;
+                }
+
+                FileHelper fileHelper = new FileHelper(v.getContext());
+                fileHelper.chooseFile(requireActivity());
+            }
+        });
+    }
+
+    private boolean allFieldsFilled() {
+        EditText title = requireActivity().findViewById(R.id.edit_task_title);
+        EditText description = requireActivity().findViewById(R.id.edit_task_description);
+        EditText dueDate = requireActivity().findViewById(R.id.edit_task_due_date);
+        EditText category = requireActivity().findViewById(R.id.edit_task_category);
+
+        return !title.getText().toString().isEmpty() && !description.getText().toString().isEmpty()
+                && !dueDate.getText().toString().isEmpty() && !category.getText().toString().isEmpty() && !dueDate.getText().toString().isEmpty();
     }
 
     private void configureSaveButton(View view, int task_id) {
@@ -100,11 +137,11 @@ public class TaskDetailsFragment extends Fragment {
                         Toast toast = Toast.makeText(getActivity(), "Task updated", Toast.LENGTH_SHORT);
                         toast.show();
                     } else {
-                        databaseHelper.addTask(task);
+                        TaskDetailsFragment.task_id = databaseHelper.addTask(task);
                         Toast toast = Toast.makeText(getActivity(), "Task saved", Toast.LENGTH_SHORT);
                         toast.show();
                     }
-                    requireActivity().onBackPressed();
+                    //requireActivity().onBackPressed();
                 }
             }
         });
@@ -120,7 +157,7 @@ public class TaskDetailsFragment extends Fragment {
         // check if every field is filled
         if (title.getText().toString().isEmpty() || description.getText().toString().isEmpty()
                 || dueDate.getText().toString().isEmpty() || category.getText().toString().isEmpty() || dueDate.getText().toString().isEmpty()) {
-            Toast toast = Toast.makeText(getActivity(), "Please fill all fields", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(getActivity(), "Please fill all fields first", Toast.LENGTH_SHORT);
             toast.show();
             return null;
         }
@@ -155,6 +192,7 @@ public class TaskDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (task_id != -1) {
+                    databaseHelper.removeTaskAttachments(task_id);
                     databaseHelper.deleteTask(task_id);
                     Toast toast = Toast.makeText(getActivity(), "Task deleted", Toast.LENGTH_SHORT);
                     toast.show();
