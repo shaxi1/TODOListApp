@@ -36,7 +36,9 @@ public class FileHelper {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         try {
-            context.startActivity(intent);
+            Intent chooser = Intent.createChooser(intent, "Open file with");
+            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(chooser);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(context, "No app found to open the file", Toast.LENGTH_SHORT).show();
         }
@@ -82,8 +84,5 @@ public class FileHelper {
         }
         return filePath;
     }
-
-
-
 
 }

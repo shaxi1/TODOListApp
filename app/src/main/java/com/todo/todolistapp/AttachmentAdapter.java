@@ -2,6 +2,7 @@ package com.todo.todolistapp;
 
 import android.content.Context;
 import android.media.Image;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,10 +63,9 @@ public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.Vi
             TextView textView = itemView.findViewById(R.id.attachment_name);
             textView.setText(attachment.path);
 
-            configureDeleteAttachmentButton();
-
             CardView cardView = itemView.findViewById(R.id.attachment_cell_container);
 
+            configureDeleteAttachmentButton(cardView);
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -75,7 +75,7 @@ public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.Vi
             });
         }
 
-        private void configureDeleteAttachmentButton() {
+        private void configureDeleteAttachmentButton(CardView cardView) {
             ImageButton deleteAttachmentButton = itemView.findViewById(R.id.attachment_delete_button);
             deleteAttachmentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -90,6 +90,7 @@ public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.Vi
                     databaseHelper.removeFileFromTask(path, attachment_id);
                     TextView name = parent.findViewById(R.id.attachment_name);
                     name.setText("Attachment deleted");
+                    cardView.setOnClickListener(null);
                     deleteAttachmentButton.setVisibility(View.GONE);
                 }
             });
