@@ -1,6 +1,7 @@
 package com.todo.todolistapp;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -122,34 +123,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private void scheduleNotification(Task task) {
         int taskIn = getNotificationTime();
+        java.sql.Date dueDate = task.dueDate;
+        long triggerTime = dueDate.getTime() - ((long) taskIn * 60 * 1000);
+        //long triggerTime = System.currentTimeMillis() + ((long) taskIn * 60 * 1000);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("todoapp", "todoapp", NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.createNotificationChannel(channel);
+        if (triggerTime <= System.currentTimeMillis()) {
+            return;
         }
 
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra("notificationId", task.taskId);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, task.taskId, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        Notification notification = new NotificationCompat.Builder(context, "todoapp")
-                .setSmallIcon(R.drawable.notification_24)
-                .setContentTitle("Task:" + task.title)
-                .setContentText("Task is due in " + taskIn + " minutes")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-                .build();
+        Intent notificationIntent = new Intent(context, NotificationReceiver.class);
+        notificationIntent.putExtra("notificationId", task.taskId);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, task.taskId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(task.taskId, notification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+        }
     }
 
     private void cancelNotification(Task task, int notificationId) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(notificationId);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        Intent notificationIntent = new Intent(context, NotificationReceiver.class);
+        notificationIntent.putExtra("notificationId", task.taskId);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, task.taskId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        alarmManager.cancel(pendingIntent);
     }
 
     @SuppressLint("Range")
