@@ -151,7 +151,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Intent notificationIntent = new Intent(context, NotificationReceiver.class);
         notificationIntent.putExtra("notificationId", task.taskId);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, task.taskId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, task.taskId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         alarmManager.cancel(pendingIntent);
     }
