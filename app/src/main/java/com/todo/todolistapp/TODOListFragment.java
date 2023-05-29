@@ -12,8 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -55,18 +60,20 @@ public class TODOListFragment extends Fragment {
 
         configureFloatingButtonClick(view);
         configureSpinner(view);
+        configureNotifyBefore(view);
+        configureHideCompleted(view);
 
         searchView = view.findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                performSearch(query);
+                performSearch(query, view);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                performSearch(newText);
+                performSearch(newText, view);
                 return true;
             }
         });
@@ -75,10 +82,70 @@ public class TODOListFragment extends Fragment {
         return view;
     }
 
-    private void performSearch(String query) {
-        List<Task> searchResults = databaseHelper.getTasksNameContaining(query);
+    private void configureHideCompleted(View view) {
+        CheckBox checkBox = view.findViewById(R.id.checkbox_hide_completed);
+        if (checkBox == null)
+            return;
 
-        taskAdapter.setTaskList(searchResults);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                int notifyBefore = databaseHelper.getNotificationTime();
+                Spinner spinner = view.findViewById(R.id.category_spinner);
+                String filterCategory = spinner.getSelectedItem().toString();
+                SearchView searchView = view.findViewById(R.id.search_view);
+                String query = searchView.getQuery().toString();
+
+                List<Task> tasks;
+                if (isChecked)
+                    tasks = databaseHelper.getTasksNoFinishedFiltered(filterCategory, query);
+                else
+                    tasks = databaseHelper.getTasksNameContaining(query);
+
+                databaseHelper.updateSettings(isChecked, filterCategory, notifyBefore);
+                taskAdapter.setTaskList(tasks);
+            }
+        });
+    }
+
+    private void configureNotifyBefore(View view) {
+        Button button = view.findViewById(R.id.button_set_notify_before);
+        if (button == null)
+            return;
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText editText = view.findViewById(R.id.edit_text_notify_before);
+                if (editText == null)
+                    return;
+
+                String text = editText.getText().toString();
+                int notifyBefore = Integer.parseInt(text);
+                if (notifyBefore < 0 || notifyBefore > 2000) {
+                    editText.setError("Invalid value");
+                } else {
+                    CheckBox checkBox = view.findViewById(R.id.checkbox_hide_completed);
+                    boolean hideCompleted = checkBox.isChecked();
+                    Spinner spinner = view.findViewById(R.id.category_spinner);
+                    String filterCategory = spinner.getSelectedItem().toString();
+                    databaseHelper.updateSettings(hideCompleted, filterCategory, notifyBefore);
+                }
+            }
+        });
+
+    }
+
+    private void performSearch(String query, View view) {
+        CheckBox checkBox = view.findViewById(R.id.checkbox_hide_completed);
+        boolean hideCompleted = checkBox.isChecked();
+        Spinner spinner = view.findViewById(R.id.category_spinner);
+        String filterCategory = spinner.getSelectedItem().toString();
+
+        if (hideCompleted)
+            taskAdapter.setTaskList(databaseHelper.getTasksNoFinishedFiltered(filterCategory, query));
+        else
+            taskAdapter.setTaskList(databaseHelper.getTasksNameContaining(query));
     }
 
 
