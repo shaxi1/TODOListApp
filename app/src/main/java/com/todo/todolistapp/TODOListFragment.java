@@ -130,6 +130,7 @@ public class TODOListFragment extends Fragment {
                     Spinner spinner = view.findViewById(R.id.category_spinner);
                     String filterCategory = spinner.getSelectedItem().toString();
                     databaseHelper.updateSettings(hideCompleted, filterCategory, notifyBefore);
+                    Toast.makeText(getContext(), "Notify before set to " + notifyBefore + " minutes", Toast.LENGTH_SHORT).show();
                 }
             }
         });
