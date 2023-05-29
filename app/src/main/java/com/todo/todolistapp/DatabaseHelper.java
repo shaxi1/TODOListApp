@@ -2,9 +2,6 @@ package com.todo.todolistapp;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,15 +10,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
-import android.widget.Toast;
-
-import androidx.core.app.NotificationCompat;
 
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-// connect to the sqlite, crud tasks, crud settings
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "todoapp.db";
     private static final int DATABASE_VERSION = 1;
@@ -125,7 +118,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int taskIn = getNotificationTime();
         java.sql.Date dueDate = task.dueDate;
         long triggerTime = dueDate.getTime() - ((long) taskIn * 60 * 1000);
-        //long triggerTime = System.currentTimeMillis() + ((long) taskIn * 60 * 1000);
 
         if (triggerTime <= System.currentTimeMillis()) {
             return;
