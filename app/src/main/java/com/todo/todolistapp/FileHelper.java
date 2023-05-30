@@ -16,6 +16,9 @@ import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class FileHelper {
 
@@ -26,12 +29,63 @@ public class FileHelper {
         this.context = context;
     }
 
-    public void launchFile(String filePath) {
-        File file = new File(filePath);
-        Uri fileUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
+    public void launchFile(String uriString) {
+        final int MAX_BUFFER_SIZE = 50 * 1024; // 50 KB
+        String temp = "file://" + uriString;
+        Uri uri = Uri.parse(temp);
+
+        if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
+            launchFileWithUri(uri);
+        } else {
+            String mimeType = context.getContentResolver().getType(uri);
+            String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+
+            File cacheDir = context.getCacheDir();
+            File tempFile;
+            try {
+                tempFile = File.createTempFile("temp", "." + extension, cacheDir);
+            } catch (IOException e) {
+                Toast.makeText(context, "Failed to create temporary file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            InputStream inputStream = null;
+            FileOutputStream outputStream = null;
+            try {
+                inputStream = context.getContentResolver().openInputStream(uri);
+                outputStream = new FileOutputStream(tempFile);
+                byte[] buffer = new byte[MAX_BUFFER_SIZE];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                Toast.makeText(context, "Failed to copy file contents, try files under " + MAX_BUFFER_SIZE, Toast.LENGTH_LONG).show();
+                tempFile.delete(); // Delete the temporary file in case of failure
+                return;
+            } finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Uri tempFileUri = Uri.fromFile(tempFile);
+            launchFileWithUri(tempFileUri);
+        }
+    }
+
+    private void launchFileWithUri(Uri uri) {
+        String mimeType = context.getContentResolver().getType(uri);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(fileUri, getMimeType(filePath));
+        intent.setDataAndType(uri, mimeType);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -39,11 +93,10 @@ public class FileHelper {
             Intent chooser = Intent.createChooser(intent, "Open file with");
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(chooser);
-        } catch (ActivityNotFoundException e) {
+        } catch (Exception e) {
             Toast.makeText(context, "No app found to open the file", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     public String getMimeType(String filePath) {
         String extension = MimeTypeMap.getFileExtensionFromUrl(filePath);
@@ -75,11 +128,9 @@ public class FileHelper {
     private String getFilePathFromUri(Uri uri, Context context) {
         String filePath = null;
         if (DocumentsContract.isDocumentUri(context, uri)) {
-            // If the Uri is a Document URI
             DocumentFile documentFile = DocumentFile.fromSingleUri(context, uri);
             filePath = documentFile != null ? documentFile.getUri().getPath() : null;
         } else {
-            // For other Uri schemes, try getting the path directly
             filePath = uri.getPath();
         }
         return filePath;

@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
             Bundle bundle = new Bundle();
             bundle.putInt("task_id", taskId);
             taskDetailsFragment.setArguments(bundle);
-            //setIntent(null);
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_list, taskDetailsFragment)
