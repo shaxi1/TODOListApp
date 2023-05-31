@@ -1,139 +1,137 @@
 package com.todo.todolistapp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.webkit.MimeTypeMap;
-import android.widget.Toast;
-
 import androidx.core.content.FileProvider;
-import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class FileHelper {
 
     public static final int REQUEST_CODE = 111;
+    public static final int MAX_FILE_SIZE = 60 * 1024; // 60kB
     private final Context context;
 
     public FileHelper(Context context) {
         this.context = context;
     }
 
-    public void launchFile(String uriString) {
-        final int MAX_BUFFER_SIZE = 50 * 1024; // 50 KB
-        String temp = "file://" + uriString;
-        Uri uri = Uri.parse(temp);
+    public void launchFile(String fileName) {
+        File cacheDir = context.getCacheDir();
+        File file = new File(cacheDir, fileName);
 
-        if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
-            launchFileWithUri(uri);
-        } else {
-            String mimeType = context.getContentResolver().getType(uri);
-            String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-
-            File cacheDir = context.getCacheDir();
-            File tempFile;
-            try {
-                tempFile = File.createTempFile("temp", "." + extension, cacheDir);
-            } catch (IOException e) {
-                Toast.makeText(context, "Failed to create temporary file", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            InputStream inputStream = null;
-            FileOutputStream outputStream = null;
-            try {
-                inputStream = context.getContentResolver().openInputStream(uri);
-                outputStream = new FileOutputStream(tempFile);
-                byte[] buffer = new byte[MAX_BUFFER_SIZE];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-            } catch (IOException e) {
-                Toast.makeText(context, "Failed to copy file contents, try files under " + MAX_BUFFER_SIZE, Toast.LENGTH_LONG).show();
-                tempFile.delete(); // Delete the temporary file in case of failure
-                return;
-            } finally {
-                try {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
-                    if (outputStream != null) {
-                        outputStream.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            Uri tempFileUri = Uri.fromFile(tempFile);
-            launchFileWithUri(tempFileUri);
-        }
-    }
-
-    private void launchFileWithUri(Uri uri) {
-        String mimeType = context.getContentResolver().getType(uri);
+        Uri fileUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(uri, mimeType);
+        String mimeType = getMimeType(fileUri);
+        intent.setDataAndType(fileUri, mimeType);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
 
-        try {
-            Intent chooser = Intent.createChooser(intent, "Open file with");
-            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(chooser);
-        } catch (Exception e) {
-            Toast.makeText(context, "No app found to open the file", Toast.LENGTH_SHORT).show();
+    private String getMimeType(Uri uri) {
+        String mimeType = null;
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            ContentResolver cr = context.getContentResolver();
+            mimeType = cr.getType(uri);
+        } else {
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase());
         }
+        return mimeType;
     }
 
-    public String getMimeType(String filePath) {
-        String extension = MimeTypeMap.getFileExtensionFromUrl(filePath);
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-    }
-
-    public void chooseFile(Activity activity) {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+    public void chooseFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        ((Activity) context).startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    public void saveFileToCache(Uri fileUri, String fileName) {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
 
         try {
-            activity.startActivityForResult(intent, REQUEST_CODE);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(context, "No file manager app found", Toast.LENGTH_SHORT).show();
+            inputStream = context.getContentResolver().openInputStream(fileUri);
+            File cacheDir = context.getCacheDir();
+            File file = new File(cacheDir, fileName);
+            outputStream = new FileOutputStream(file);
+
+            byte[] buffer = new byte[MAX_FILE_SIZE];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public String handleFileSelection(int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && data != null) {
             Uri uri = data.getData();
-            if (uri != null) {
-                return getFilePathFromUri(uri, context);
-            }
+            String fileName = getFileName(uri);
+            saveFileToCache(uri, fileName);
+            return fileName;
         }
         return null;
     }
 
-    private String getFilePathFromUri(Uri uri, Context context) {
-        String filePath = null;
-        if (DocumentsContract.isDocumentUri(context, uri)) {
-            DocumentFile documentFile = DocumentFile.fromSingleUri(context, uri);
-            filePath = documentFile != null ? documentFile.getUri().getPath() : null;
-        } else {
-            filePath = uri.getPath();
+    private String getFileName(Uri uri) {
+        String fileName = null;
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            ContentResolver cr = context.getContentResolver();
+            fileName = getDisplayName(cr, uri);
         }
-        return filePath;
+        if (fileName == null) {
+            fileName = uri.getLastPathSegment();
+        }
+        return fileName;
+    }
+
+    public void deleteFileFromCache(String fileName) {
+        File cacheDir = context.getCacheDir();
+        File file = new File(cacheDir, fileName);
+
+        file.delete();
+    }
+
+    @SuppressLint("Range")
+    private String getDisplayName(ContentResolver contentResolver, Uri uri) {
+        String displayName = null;
+        try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return displayName;
     }
 
 }

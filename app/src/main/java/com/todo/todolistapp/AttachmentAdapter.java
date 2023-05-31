@@ -88,6 +88,8 @@ public class AttachmentAdapter extends RecyclerView.Adapter<AttachmentAdapter.Vi
 
                     DatabaseHelper databaseHelper = new DatabaseHelper(v.getContext());
                     databaseHelper.removeFileFromTask(path, attachment_id);
+                    FileHelper fileHelper = new FileHelper(v.getContext());
+                    fileHelper.deleteFileFromCache(path);
                     TextView name = parent.findViewById(R.id.attachment_name);
                     name.setText("Attachment deleted");
                     cardView.setOnClickListener(null);

@@ -111,7 +111,7 @@ public class TaskDetailsFragment extends Fragment {
                 }
 
                 FileHelper fileHelper = new FileHelper(v.getContext());
-                fileHelper.chooseFile(requireActivity());
+                fileHelper.chooseFile();
             }
         });
     }
