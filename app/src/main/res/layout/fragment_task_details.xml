@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#282A36">
 
     <EditText
         android:id="@+id/edit_task_title"
@@ -58,6 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:backgroundTint="#44475a"
             android:text="Save" />
 
         <Button
@@ -65,6 +67,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:backgroundTint="#44475a"
             android:text="Delete" />
 
         <LinearLayout
@@ -93,6 +96,7 @@
         android:layout_gravity="end"
         android:text="@string/attach_file"
         android:layout_marginEnd="5dp"
+        android:backgroundTint="#44475a"
         android:id="@+id/attach_file_button"/>
 
 </LinearLayout>
