@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCardClickListener {
+    static volatile boolean dontRecreate = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +82,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         super.onResume();
         if (getIntent() != null) {
             setIntent(null);
+            return;
+        }
+        if (dontRecreate) {
+            dontRecreate = false;
             return;
         }
         TODOListFragment todoListFragment = TODOListFragment.newInstance();

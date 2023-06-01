@@ -40,6 +40,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 .setAutoCancel(true)
                 .build();
 
+        MainActivity.dontRecreate = true;
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(task.taskId, notification);
     }
