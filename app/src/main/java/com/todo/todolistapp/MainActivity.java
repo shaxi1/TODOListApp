@@ -73,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         bundle.putInt("task_id", task_id);
         taskDetailsFragment.setArguments(bundle);
 
-        // TODO: add logic for tablets
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, taskDetailsFragment).commit();
     }
 

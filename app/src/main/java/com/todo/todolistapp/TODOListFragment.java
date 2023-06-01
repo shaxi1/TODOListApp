@@ -120,8 +120,16 @@ public class TODOListFragment extends Fragment {
                 if (editText == null)
                     return;
 
-                String text = editText.getText().toString();
-                int notifyBefore = Integer.parseInt(text);
+                String text;
+                int notifyBefore;
+                try {
+                    text = editText.getText().toString();
+                    notifyBefore = Integer.parseInt(text);
+                } catch(NumberFormatException e) {
+                    editText.setError("Invalid value");
+                    return;
+                }
+
                 if (notifyBefore < 0 || notifyBefore > 2000) {
                     editText.setError("Invalid value");
                 } else {
