@@ -53,6 +53,7 @@ public class TaskDetailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         databaseHelper = new DatabaseHelper(getActivity());
     }
 
@@ -110,7 +111,7 @@ public class TaskDetailsFragment extends Fragment {
                 }
 
                 FileHelper fileHelper = new FileHelper(v.getContext());
-                fileHelper.chooseFile(requireActivity());
+                fileHelper.chooseFile();
             }
         });
     }

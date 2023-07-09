@@ -7,8 +7,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCardClickListener {
+    static volatile boolean dontRecreate = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,17 +57,29 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
             Bundle bundle = new Bundle();
             bundle.putInt("task_id", taskId);
             taskDetailsFragment.setArguments(bundle);
-            //setIntent(null);
 
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_list, taskDetailsFragment)
-                    .commit();
+            if (isTablet(this)) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.tablet_details, taskDetailsFragment)
+                        .commit();
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_list, taskDetailsFragment)
+                        .commit();
+            }
         } else {
             TODOListFragment todoListFragment = TODOListFragment.newInstance();
             todoListFragment.setOnCardClickListener(this);
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, todoListFragment).commit();
         }
 
+    }
+
+    public static boolean isTablet(Context context) {
+        Configuration configuration = context.getResources().getConfiguration();
+        int screenLayout = configuration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+        return screenLayout == Configuration.SCREENLAYOUT_SIZE_LARGE
+                || screenLayout == Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
 
     @Override
@@ -74,8 +89,15 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         bundle.putInt("task_id", task_id);
         taskDetailsFragment.setArguments(bundle);
 
-        // TODO: add logic for tablets
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, taskDetailsFragment).commit();
+        if (isTablet(this)) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.tablet_details, taskDetailsFragment)
+                    .commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_list, taskDetailsFragment)
+                    .commit();
+        }
     }
 
     @Override
@@ -83,6 +105,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
         super.onResume();
         if (getIntent() != null) {
             setIntent(null);
+            return;
+        }
+        if (dontRecreate) {
+            dontRecreate = false;
             return;
         }
         TODOListFragment todoListFragment = TODOListFragment.newInstance();
@@ -119,7 +145,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnCar
                 Bundle bundle = new Bundle();
                 bundle.putInt("task_id", TaskDetailsFragment.task_id);
                 taskDetailsFragment.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, taskDetailsFragment).commit();
+                if (isTablet(this)) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.tablet_details, taskDetailsFragment).commit();
+                } else {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_list, taskDetailsFragment).commit();
+                }
             }
         }
     }
